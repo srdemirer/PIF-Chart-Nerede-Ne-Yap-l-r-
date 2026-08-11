@@ -1,43 +1,110 @@
-body { 
-    font-family: Arial, sans-serif; 
-    text-align: center; 
-    background: #2c3e50; 
-    color: white;
-    padding: 20px; 
+/* ===== RESET & GENEL ===== */
+* { box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f0f4f8; /* Senin eski projedeki arka plan */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    margin: 0;
 }
 
-#map-container { 
-    position: relative; 
-    display: inline-block; 
-    margin-top: 20px; 
-    border: 2px solid #ecf0f1; 
-    background: #fff; 
-    max-width: 90vw; /* Ekrana sığması için */
+/* ===== RENK DEĞİŞKENLERİ ===== */
+:root {
+    --primary: #0b3c5d;
+    --primary-light: #1a5a7a;
+    --accent: #328cc1;
+    --danger: #e53e3e;
+    --gray-700: #4a5568;
+    --shadow: 0 8px 24px rgba(0,0,0,0.06);
+    --radius: 20px;
+}
+
+/* ===== GENEL KART ===== */
+.quiz-card {
+    background: #ffffff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem 1.5rem;
+    max-width: 900px; /* Chart için biraz daha geniş tuttuk */
+    width: 100%;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+/* ===== BAŞLIK ===== */
+.header h1 {
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 1.8rem;
+    letter-spacing: -0.02em;
+}
+.header p {
+    color: var(--gray-700);
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ===== BUTONLAR ===== */
+.btn-primary-custom {
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    padding: 0.9rem;
+    transition: background 0.2s;
+    cursor: pointer;
+    display: inline-block;
+}
+.btn-primary-custom:hover { background: var(--primary-light); color: white;}
+
+.btn-danger-custom {
+    background: #fff5f5;
+    color: var(--danger);
+    border: 2px solid #fed7d7;
+    font-weight: 700;
+    border-radius: 14px;
+    padding: 0.7rem;
+    transition: all 0.2s;
+}
+.btn-danger-custom:hover { background: #fed7d7; color: #c53030;}
+
+/* ===== HARİTA ALANI ===== */
+#map-container {
+    position: relative;
+    display: inline-block; /* Çerçevenin resme tam oturmasını sağlar */
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f7fafc;
     overflow: hidden;
 }
 
-#map-container img { 
-    max-width: 100%; 
-    height: auto; 
-    display: block; 
+#map-container img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
-/* Kırmızı Pin Tasarımı */
+/* ===== PİN TASARIMI ===== */
 .pin { 
     position: absolute; 
-    width: 16px; 
-    height: 16px; 
-    background-color: #e74c3c; 
-    border: 2px solid white;
+    width: 22px; 
+    height: 22px; 
+    background-color: var(--danger); 
+    border: 3px solid white;
     border-radius: 50%; 
     transform: translate(-50%, -50%); 
     cursor: pointer; 
-    box-shadow: 0 0 8px rgba(0,0,0,0.8); 
-    transition: background-color 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4); 
+    transition: transform 0.2s, background-color 0.2s;
+    z-index: 10;
 }
 
 .pin:hover { 
-    background-color: #f1c40f; 
-    width: 20px;
-    height: 20px;
+    background-color: #f6ad55; 
+    transform: translate(-50%, -50%) scale(1.3);
 }
