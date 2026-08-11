@@ -1,0 +1,43 @@
+body { 
+    font-family: Arial, sans-serif; 
+    text-align: center; 
+    background: #2c3e50; 
+    color: white;
+    padding: 20px; 
+}
+
+#map-container { 
+    position: relative; 
+    display: inline-block; 
+    margin-top: 20px; 
+    border: 2px solid #ecf0f1; 
+    background: #fff; 
+    max-width: 90vw; /* Ekrana sığması için */
+    overflow: hidden;
+}
+
+#map-container img { 
+    max-width: 100%; 
+    height: auto; 
+    display: block; 
+}
+
+/* Kırmızı Pin Tasarımı */
+.pin { 
+    position: absolute; 
+    width: 16px; 
+    height: 16px; 
+    background-color: #e74c3c; 
+    border: 2px solid white;
+    border-radius: 50%; 
+    transform: translate(-50%, -50%); 
+    cursor: pointer; 
+    box-shadow: 0 0 8px rgba(0,0,0,0.8); 
+    transition: background-color 0.2s;
+}
+
+.pin:hover { 
+    background-color: #f1c40f; 
+    width: 20px;
+    height: 20px;
+}
