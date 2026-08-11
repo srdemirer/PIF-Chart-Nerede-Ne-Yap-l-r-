@@ -1,24 +1,38 @@
+// script.js - Güncellenmiş ve Sağlamlaştırılmış Kod
+
 const imageLoader = document.getElementById('imageLoader');
 const chartImage = document.getElementById('chartImage');
 const mapContainer = document.getElementById('map-container');
-const clearBtn = document.getElementById('clear-btn');
+const resetBtn = document.getElementById('resetBtn');
+const infoArea = document.getElementById('info-area');
 
-// 1. Sayfa yüklendiğinde eski verileri getir
+// --- 1. SAYFA YÜKLENDİĞİNDE KAYDEDİLMİŞ VERİLERİ GERİ GETİR ---
 window.onload = function() {
-    const savedData = localStorage.getItem('chartData');
+    const savedData = localStorage.getItem('pifChartData');
     if (savedData) {
-        const data = JSON.parse(savedData);
-        chartImage.src = data.image;
-        mapContainer.style.display = 'inline-block';
-        clearBtn.style.display = 'block';
-        
-        data.pins.forEach(pinData => {
-            createPin(pinData.x, pinData.y, pinData.note);
-        });
+        try {
+            const data = JSON.parse(savedData);
+            if (data.image && data.image !== '') {
+                chartImage.src = data.image;
+                chartImage.style.display = 'block';
+                infoArea.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Kaydedilmiş chart yüklendi.';
+                // Kaydedilmiş pinleri ekrana çiz
+                if (data.pins && Array.isArray(data.pins)) {
+                    data.pins.forEach(pinData => {
+                        createPin(pinData.x, pinData.y, pinData.note);
+                    });
+                }
+                // Pin sayısını göster
+                updatePinCount();
+            }
+        } catch (e) {
+            console.error('Veri yükleme hatası:', e);
+            localStorage.removeItem('pifChartData');
+        }
     }
 };
 
-// 2. Verileri Tarayıcıya Kaydetme Fonksiyonu
+// --- 2. VERİLERİ LOCALSTORAGE'A KAYDETME ---
 function saveToLocalStorage() {
     const pins = [];
     document.querySelectorAll('.pin').forEach(pin => {
@@ -28,83 +42,141 @@ function saveToLocalStorage() {
             note: pin.title
         });
     });
-    
+
     const data = {
         image: chartImage.src,
         pins: pins
     };
-    
+
     try {
-        localStorage.setItem('chartData', JSON.stringify(data));
+        localStorage.setItem('pifChartData', JSON.stringify(data));
+        updatePinCount();
     } catch (e) {
-        alert("Uyarı: Resim boyutu tarayıcı sınırı için çok büyük. Pinler kaydedilemeyebilir.");
+        console.warn('Kaydetme hatası (resim çok büyük olabilir):', e);
+        alert('Uyarı: Yüklediğiniz resim çok büyük olabilir, bu nedenle veriler kaydedilemedi. Lütfen daha küçük boyutlu bir resim yüklemeyi deneyin.');
     }
 }
 
-// 3. Pin Oluşturma Fonksiyonu
+// --- 3. PIN OLUŞTURMA VE YÖNETİMİ ---
 function createPin(x, y, note) {
     const pin = document.createElement('div');
     pin.className = 'pin';
-    pin.style.left = x; // Bu değer artık % olarak gelecek
-    pin.style.top = y;  // Bu değer artık % olarak gelecek
+    pin.style.left = x;
+    pin.style.top = y;
     pin.title = note;
-    
+
+    // Pine tıklama olayı: Notu göster ve silme seçeneği sun
     pin.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if(confirm("📍 Pin Notu:\n\n" + note + "\n\nBu pini silmek ister misiniz?")) {
-            pin.remove();
-            saveToLocalStorage();
+        e.stopPropagation(); // Tıklamanın altındaki haritaya gitmesini engelle
+
+        if (confirm(`📍 Pin Notu:\n\n"${note}"\n\nBu pini silmek istiyor musunuz?`)) {
+            this.remove(); // Pini DOM'dan kaldır
+            saveToLocalStorage(); // Yeni durumu kaydet
         }
     });
 
     mapContainer.appendChild(pin);
+    return pin;
 }
 
-// 4. Resim Yükleme İşlemi
+// --- 4. YENİ RESİM YÜKLEME ---
 imageLoader.addEventListener('change', function(e) {
-    if(!e.target.files[0]) return;
-    
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Sadece resim dosyalarını kontrol et
+    if (!file.type.startsWith('image/')) {
+        alert('Lütfen geçerli bir resim dosyası seçin (JPG, PNG).');
+        this.value = ''; // Input'u temizle
+        return;
+    }
+
     const reader = new FileReader();
     reader.onload = function(event) {
-        chartImage.src = event.target.result;
-        mapContainer.style.display = 'inline-block';
-        clearBtn.style.display = 'block';
+        // Eski pinleri temizle
+        document.querySelectorAll('.pin').forEach(pin => pin.remove());
         
-        document.querySelectorAll('.pin').forEach(pin => pin.remove());
+        chartImage.src = event.target.result;
+        chartImage.style.display = 'block';
+        
+        infoArea.innerHTML = `<i class="bi bi-check-circle-fill text-success"></i> "${file.name}" yüklendi. Resme tıklayarak pin ekleyin.`;
+        
+        // Yeni resmi ve boş pin listesini kaydet
         saveToLocalStorage();
-    }
-    reader.readAsDataURL(e.target.files[0]);
+    };
+    
+    reader.onerror = function() {
+        alert('Dosya okunurken bir hata oluştu. Lütfen tekrar deneyin.');
+    };
+    
+    reader.readAsDataURL(file);
+    // Input'u temizle, aynı dosya tekrar seçilebilsin diye
+    this.value = '';
 });
 
-// 5. Haritaya Tıklayınca Pin Ekleme (Yüzdelik Koordinat ile Responsive Uyum)
+// --- 5. HARİTAYA TIKLAYARAK PIN EKLEME ---
 mapContainer.addEventListener('click', function(e) {
-    if(e.target.classList.contains('pin')) return;
+    // Eğer resim görünmüyorsa veya tıklanan yer pin ise işlem yapma
+    if (chartImage.style.display === 'none') {
+        infoArea.innerHTML = '<i class="bi bi-info-circle text-warning"></i> Lütfen önce bir chart yükleyin.';
+        return;
+    }
+    if (e.target.classList.contains('pin')) return;
+    // Eğer tıklanan yer resmin dışındaysa (örnek: boş alan) işlemi engelle
+    if (e.target.id !== 'chartImage' && e.target.id !== 'map-container') return;
 
+    // Tıklanan yerin koordinatlarını hesapla (mapContainer'a göre)
     const rect = mapContainer.getBoundingClientRect();
-    
-    // Tıklanılan yerin resim üzerindeki % konumunu hesapla
-    const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+    // Resim boyutlarına göre oranlama yapmak daha doğru olur, ama basitlik için direk piksel kullanıyoruz.
+    // Ancak pinin tam olarak tıklanan yere denk gelmesi için:
+    const x = (e.clientX - rect.left) + 'px';
+    const y = (e.clientY - rect.top) + 'px';
 
-    const x = xPercent + '%';
-    const y = yPercent + '%';
+    const note = prompt("Bu noktaya eklemek istediğiniz bilgi veya yorum nedir? (Örn: VOR, Waypoint, Not)");
 
-    const note = prompt("Bu noktaya eklemek istediğiniz bilgi veya yorum nedir?");
-    
-    if (note) {
-        createPin(x, y, note);
-        saveToLocalStorage();
+    if (note && note.trim() !== '') {
+        createPin(x, y, note.trim());
+        saveToLocalStorage(); // Yeni pini kaydet
+        infoArea.innerHTML = `<i class="bi bi-pin-fill text-danger"></i> Yeni pin eklendi: "${note.trim()}"`;
+    } else if (note !== null) {
+        // Kullanıcı 'İptal' değil de boş girdi gönderdiyse
+        alert('Not girilmediği için pin eklenmedi.');
     }
 });
 
-// 6. Sistemi Sıfırlama (Her şeyi temizler)
-clearBtn.addEventListener('click', function() {
-    if(confirm("Tüm pinleri ve chart resmini silmek istediğinize emin misiniz?")) {
-        localStorage.removeItem('chartData');
+// --- 6. SİSTEMİ SIFIRLAMA ---
+resetBtn.addEventListener('click', function() {
+    if (confirm('Tüm pinleri ve yüklenen chart\'ı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+        // Pinleri temizle
         document.querySelectorAll('.pin').forEach(pin => pin.remove());
-        chartImage.src = "";
-        mapContainer.style.display = 'none';
-        clearBtn.style.display = 'none';
-        imageLoader.value = ""; 
+        // Resmi temizle
+        chartImage.src = '';
+        chartImage.style.display = 'none';
+        // LocalStorage'ı temizle
+        localStorage.removeItem('pifChartData');
+        // Bilgi alanını güncelle
+        infoArea.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Sistem sıfırlandı. Yeni bir chart yükleyebilirsiniz.';
+        // Input'u temizle
+        imageLoader.value = '';
+        updatePinCount();
     }
 });
+
+// --- 7. YARDIMCI FONKSİYONLAR ---
+function updatePinCount() {
+    const pinCount = document.querySelectorAll('.pin').length;
+    if (pinCount > 0 && chartImage.style.display !== 'none') {
+        const infoText = document.querySelector('#info-area');
+        if (infoText && !infoText.innerHTML.includes('Pin sayısı')) {
+            // Bilgi alanını güncelle ama mevcut mesajı bozma
+            const existingText = infoText.innerHTML;
+            if (!existingText.includes('Pin sayısı')) {
+                infoText.innerHTML = existingText + ` | <span class="badge bg-danger">${pinCount} pin</span>`;
+            }
+        }
+    }
+}
+
+// Pin sayısını güncellemek için bir gözlemci ekleyelim (MutationObserver)
+// Basit bir çözüm: Her kaydetmede güncelle.
+// saveToLocalStorage içinde zaten updatePinCount() çağrılıyor.
