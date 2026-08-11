@@ -1,110 +1,99 @@
-/* ===== RESET & GENEL ===== */
-* { box-sizing: border-box; }
+/* style.css - Güncellenmiş Tasarım */
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f0f4f8; /* Senin eski projedeki arka plan */
+    background: #f8f9fa;
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     margin: 0;
 }
 
-/* ===== RENK DEĞİŞKENLERİ ===== */
-:root {
-    --primary: #0b3c5d;
-    --primary-light: #1a5a7a;
-    --accent: #328cc1;
-    --danger: #e53e3e;
-    --gray-700: #4a5568;
-    --shadow: 0 8px 24px rgba(0,0,0,0.06);
-    --radius: 20px;
-}
-
-/* ===== GENEL KART ===== */
-.quiz-card {
-    background: #ffffff;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 2rem 1.5rem;
-    max-width: 900px; /* Chart için biraz daha geniş tuttuk */
-    width: 100%;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-/* ===== BAŞLIK ===== */
-.header h1 {
-    color: var(--primary);
-    font-weight: 800;
-    font-size: 1.8rem;
-    letter-spacing: -0.02em;
-}
-.header p {
-    color: var(--gray-700);
-    font-weight: 500;
-    margin: 0;
-}
-
-/* ===== BUTONLAR ===== */
-.btn-primary-custom {
-    background: var(--primary);
-    color: white;
-    font-weight: 700;
-    border: none;
-    border-radius: 14px;
-    padding: 0.9rem;
-    transition: background 0.2s;
-    cursor: pointer;
-    display: inline-block;
-}
-.btn-primary-custom:hover { background: var(--primary-light); color: white;}
-
-.btn-danger-custom {
-    background: #fff5f5;
-    color: var(--danger);
-    border: 2px solid #fed7d7;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 0.7rem;
-    transition: all 0.2s;
-}
-.btn-danger-custom:hover { background: #fed7d7; color: #c53030;}
-
-/* ===== HARİTA ALANI ===== */
+/* Chart Konteyneri */
 #map-container {
     position: relative;
-    display: inline-block; /* Çerçevenin resme tam oturmasını sağlar */
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    background: #f7fafc;
-    overflow: hidden;
+    display: inline-block;
+    background: #dee2e6;
+    min-height: 300px; /* Resim yüklenene kadar bir yükseklik verir */
+    width: 100%;
+    transition: box-shadow 0.3s ease;
 }
 
 #map-container img {
-    max-width: 100%;
-    height: auto;
     display: block;
+    width: 100%;
+    height: auto;
+    user-select: none; /* Resmin seçilmesini engeller */
+    -webkit-user-drag: none;
 }
 
-/* ===== PİN TASARIMI ===== */
-.pin { 
-    position: absolute; 
-    width: 22px; 
-    height: 22px; 
-    background-color: var(--danger); 
+/* Kırmızı Pin Tasarımı - Geliştirilmiş */
+.pin {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: #dc3545;
     border: 3px solid white;
-    border-radius: 50%; 
-    transform: translate(-50%, -50%); 
-    cursor: pointer; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4); 
-    transition: transform 0.2s, background-color 0.2s;
+    border-radius: 50% 50% 50% 0;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 10;
 }
 
-.pin:hover { 
-    background-color: #f6ad55; 
-    transform: translate(-50%, -50%) scale(1.3);
+/* Pinin içindeki nokta (efekt için) */
+.pin::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pin:hover {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(1.25);
+    background-color: #ff6b6b;
+    box-shadow: 0 0 0 6px rgba(220, 53, 69, 0.3);
+    z-index: 20;
+}
+
+/* Pin tıklama anı için buton efekti */
+.pin:active {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(0.9);
+}
+
+/* Yükleme butonu için özel stil (isteğe bağlı) */
+.input-group-text {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+#resetBtn {
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+#resetBtn:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+/* Bilgi alanı */
+#info-area {
+    font-size: 0.95rem;
+    background: #fff;
+    padding: 0.75rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
